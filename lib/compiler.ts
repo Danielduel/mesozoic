@@ -14,13 +14,18 @@ let compiler: Awaited<ReturnType<typeof instantiate>> | undefined;
 export async function createCompiler(policy: Policy | undefined = undefined) {
   if (!compiler) {
     const url = new URL("./swc_mesozoic_bg.wasm", import.meta.url);
-    const file = await cache(
-      url,
-      policy,
-      `mesozoic-${VERSION}`,
-    );
+    try {
+      const file = await cache(
+        url,
+        policy,
+        `mesozoic-${VERSION}`,
+      );
 
-    compiler = await instantiate({ url: toFileUrl(file.path) });
+      compiler = await instantiate({ url: toFileUrl(file.path) });
+    } catch (_) {
+      // This will run in deno.deploy
+      compiler = await instantiate();
+    }
   }
 
   return compiler;
